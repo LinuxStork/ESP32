@@ -9,7 +9,8 @@ const char* htmlCode = R"html(
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title></title>
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         overflow-x: hidden;
@@ -23,10 +24,10 @@ const char* htmlCode = R"html(
       import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
       import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
 
-      // Postavljanje Three.js scene | Set up Three.js scene
+      // Postavljanje Three.js scene
       const scene = new THREE.Scene();
 
-      // Kamera | Set up the camera
+      // Kamera
       const aspect = window.innerWidth / window.innerHeight;
       const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
       camera.position.z = 10;
@@ -35,12 +36,12 @@ const char* htmlCode = R"html(
       camera.lookAt(0, 1.5, 0);
       camera.updateProjectionMatrix();
 
-      // Svjetlo | Light
+      // Svjetlo
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(10, 5, 10); // Adjust the position of the light
+      directionalLight.position.set(10, 5, 10);
       scene.add(directionalLight);
 
-      // Postavljanje renderer | Set up the renderer
+      // Postavljanje renderer
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
@@ -69,7 +70,7 @@ const char* htmlCode = R"html(
       function loadModels() {
         return new Promise((resolve, reject) => {
           let timeout = setTimeout(() => {
-            reject("Models could not be loaded");
+            reject();
           }, 10000);
 
           //Baza | Base
@@ -101,14 +102,13 @@ const char* htmlCode = R"html(
                 loader.load("http://167.235.195.106:80/Hand.glb", (gltf) => {
                   hand = gltf.scene;
                   hand.translateY(0.092);
-                  hand.translateZ(-0.023);
-                  hand.translateX(0.005);
+                  hand.translateZ(-0.021);
                   upperArm.add(hand);
                   //Hvataljka | Gripper
                   loader.load("http://167.235.195.106:80/Gripper.glb", (gltf) => {
                     gripper = gltf.scene;
                     gripper.translateY(0.035);
-                    gripper.translateZ(0.03);
+                    gripper.translateZ(0.027);
                     gripper.translateX(-0.005);
                     hand.add(gripper);
                     resolve();
@@ -119,14 +119,14 @@ const char* htmlCode = R"html(
           });
         });
       }
-      // Pozivanje funkcije loadModels(), ako su 3D modeli uspječno učitani pozivanje funkcije rotateJoints() | 
+      // Pozivanje funkcije loadModels(), ako su 3D modeli uspječno učitani pozivanje funkcije rotateJoints() |
       // Calling the function loadModels(), if the 3D models are successfully loaded calling the function rotateJoints()
       loadModels()
         .then(() => {
           rotateJoints();
         })
         .catch((error) => {
-          // Ako se 3D modeli ne uspiju učitati, stvorite vizualizaciju ruke robota s oblicima i zatim pozovite funkciju rotateJoints() | 
+          // Ako se 3D modeli ne uspiju učitati, stvorite vizualizaciju ruke robota s oblicima i zatim pozovite funkciju rotateJoints() |
           // If 3D models fail to load, create robot arm visualization with shapes and then calling function rotateJoints()
           // Baza | Base
           base = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 2), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
@@ -236,6 +236,5 @@ const char* htmlCode = R"html(
     </script>
   </body>
 </html>
-
 )html";
 #endif
