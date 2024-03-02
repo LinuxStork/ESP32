@@ -9,7 +9,7 @@ public class SerialMonitor {
     public static void serialMonitor(String port, JTextArea textArea) {
         new Thread(() -> {
             try {
-                Process process = Runtime.getRuntime().exec("python3 python/serialmonitor.py " + port);
+                Process process = Runtime.getRuntime().exec("python python/serialmonitor.py " + port);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
                 String line;
@@ -29,7 +29,7 @@ public class SerialMonitor {
 
     public static void serialPorts(JComboBox<String> portComboBox) {
         try {
-            Process process = Runtime.getRuntime().exec("python3 python/serialmonitor.py");
+            Process process = Runtime.getRuntime().exec("python python/serialmonitor.py");
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String line;

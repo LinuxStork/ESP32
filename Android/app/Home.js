@@ -20,7 +20,7 @@ const Home = ({setServerIp}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.robotArm}>ESP32: Robostak ruka</Text>
+      <Text style={styles.robotArm}>ESP32: Robotska ruka</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter IP Address"
