@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import Auto from './Auto';
 import Arm from './Arm';
 import Home from './Home';
 
@@ -19,6 +20,9 @@ export default function App() {
         </Tab.Screen>
         <Tab.Screen name="Arm" options={{headerShown: false}}>
           {() => <Arm serverIp={serverIp} />}
+        </Tab.Screen>
+        <Tab.Screen name="Auto" options={{headerShown: false}}>
+          {() => <Auto serverIp={serverIp} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
