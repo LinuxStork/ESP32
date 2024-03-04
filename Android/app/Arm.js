@@ -52,7 +52,15 @@ const ButtonComponent = ({label, onPress}) => {
   );
 };
 
-const Arm = ({serverIp}) => {
+const Arm = ({serverIp, joints, updateJoints}) => {
+  const [sliderValues, setSliderValues] = useState({
+    base: 0,
+    shoulder: 0,
+    upperArm: 0,
+    hand: 0,
+    gripper: 0,
+    gripperTop: 0,
+  });
   const toServer = async (servo, value) => {
     const url = `http://${serverIp}/setServo?servo=${servo}&value=${value}`;
 
@@ -69,6 +77,14 @@ const Arm = ({serverIp}) => {
     }
   };
 
+  const handleSliderChange = (actionName, value) => {
+    setSliderValues(prevValues => ({
+      ...prevValues,
+      [actionName]: value,
+    }));
+    toServer(actionName, value);
+  };
+
   return (
     <View style={styles.container}>
       <WebView source={{uri: `http://${serverIp}`}} style={styles.webview} />
@@ -78,7 +94,7 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <SliderComponent
         label="Shoulder"
@@ -86,7 +102,7 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <SliderComponent
         label="Upper Arm"
@@ -94,7 +110,7 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <SliderComponent
         label="Hand"
@@ -102,7 +118,7 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <SliderComponent
         label="Gripper"
@@ -110,7 +126,7 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <SliderComponent
         label="GripperTop"
@@ -118,13 +134,23 @@ const Arm = ({serverIp}) => {
         initialValue={0}
         minValue={-90}
         maxValue={90}
-        onValueChange={toServer}
+        onValueChange={handleSliderChange}
       />
       <View style={styles.buttonContainer}>
         <ButtonComponent
           label="Save"
           actionName="save"
-          onPress={() => toServer('save', 0)}
+          onPress={() => {
+            toServer('save', 0);
+            updateJoints(prevJoints => ({
+              base: [...prevJoints.base, sliderValues.base],
+              shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
+              upperArm: [...prevJoints.upperArm, sliderValues.upperArm],
+              hand: [...prevJoints.hand, sliderValues.hand],
+              gripper: [...prevJoints.gripper, sliderValues.gripper],
+              gripperTop: [...prevJoints.gripperTop, sliderValues.gripperTop],
+            }));
+          }}
         />
         <ButtonComponent
           label="Play"

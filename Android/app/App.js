@@ -11,6 +11,14 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [serverIp, setServerIp] = useState('');
+  const [joints, setJoints] = useState({
+    base: [],
+    shoulder: [],
+    upperArm: [],
+    hand: [],
+    gripper: [],
+    gripperTop: [],
+  });
 
   return (
     <NavigationContainer style={styles.container}>
@@ -19,10 +27,12 @@ export default function App() {
           {() => <Home setServerIp={setServerIp} />}
         </Tab.Screen>
         <Tab.Screen name="Arm" options={{headerShown: false}}>
-          {() => <Arm serverIp={serverIp} />}
+          {() => (
+            <Arm serverIp={serverIp} joints={joints} updateJoints={setJoints} />
+          )}
         </Tab.Screen>
         <Tab.Screen name="Auto" options={{headerShown: false}}>
-          {() => <Auto serverIp={serverIp} />}
+          {() => <Auto serverIp={serverIp} joints={joints} />}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
