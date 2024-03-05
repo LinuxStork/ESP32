@@ -22,7 +22,12 @@ export default function App() {
 
   return (
     <NavigationContainer style={styles.container}>
-      <Tab.Navigator tabBarOptions={styles.tabNavigator}>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarActiveTintColor: 'aqua',
+          tabBarInactiveTintColor: 'gray',
+          tabBarStyle: {display: 'flex'},
+        }}>
         <Tab.Screen name="Home" options={{headerShown: false}}>
           {() => <Home setServerIp={setServerIp} />}
         </Tab.Screen>
@@ -44,9 +49,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  tabNavigator: {
-    activeTintColor: 'aqua',
-    inactiveTintColor: 'gray',
   },
 });
