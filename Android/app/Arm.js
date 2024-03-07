@@ -52,7 +52,13 @@ const ButtonComponent = ({label, onPress}) => {
   );
 };
 
-const Arm = ({serverIp, joints, updateJoints}) => {
+const Arm = ({
+  serverIp,
+  joints,
+  setJoints,
+  setModifyingSave,
+  modifyingSave,
+}) => {
   const [sliderValues, setSliderValues] = useState({
     base: 0,
     shoulder: 0,
@@ -88,6 +94,11 @@ const Arm = ({serverIp, joints, updateJoints}) => {
   return (
     <View style={styles.container}>
       <WebView source={{uri: `http://${serverIp}`}} style={styles.webview} />
+      <Text style={styles.sliderText}>
+        {modifyingSave === 'nu'
+          ? 'Currently Not Modifying Save'
+          : 'Currently Modifying ' + modifyingSave + '. Save'}
+      </Text>
       <SliderComponent
         label="Base"
         actionName="base"
@@ -142,7 +153,7 @@ const Arm = ({serverIp, joints, updateJoints}) => {
           actionName="save"
           onPress={() => {
             toServer('save', 0);
-            updateJoints(prevJoints => ({
+            setJoints(prevJoints => ({
               base: [...prevJoints.base, sliderValues.base],
               shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
               upperArm: [...prevJoints.upperArm, sliderValues.upperArm],
@@ -153,14 +164,8 @@ const Arm = ({serverIp, joints, updateJoints}) => {
           }}
         />
         <ButtonComponent
-          label="Play"
-          actionName="play"
-          onPress={() => toServer('play', 0)}
-        />
-        <ButtonComponent
-          label="Restart"
-          actionName="restart"
-          onPress={() => toServer('restart', 0)}
+          label="Stop Modifying"
+          onPress={() => setModifyingSave('nu')}
         />
       </View>
     </View>

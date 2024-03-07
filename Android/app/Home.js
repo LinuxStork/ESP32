@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 
-const Home = ({setServerIp}) => {
+const Home = ({setServerIp, setModifyingSave}) => {
   const [ipInput, setIpInput] = useState('');
 
   const handleInputChange = text => {
@@ -16,6 +16,7 @@ const Home = ({setServerIp}) => {
 
   const handleSetIp = () => {
     setServerIp(ipInput);
+    setModifyingSave('nu');
   };
 
   return (

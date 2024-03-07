@@ -11,6 +11,7 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
   const [serverIp, setServerIp] = useState('');
+  const [modifyingSave, setModifyingSave] = useState('');
   const [joints, setJoints] = useState({
     base: [],
     shoulder: [],
@@ -29,15 +30,32 @@ export default function App() {
           tabBarStyle: {display: 'flex'},
         }}>
         <Tab.Screen name="Home" options={{headerShown: false}}>
-          {() => <Home setServerIp={setServerIp} />}
+          {() => (
+            <Home
+              setServerIp={setServerIp}
+              setModifyingSave={setModifyingSave}
+            />
+          )}
         </Tab.Screen>
         <Tab.Screen name="Arm" options={{headerShown: false}}>
           {() => (
-            <Arm serverIp={serverIp} joints={joints} updateJoints={setJoints} />
+            <Arm
+              serverIp={serverIp}
+              joints={joints}
+              setJoints={setJoints}
+              setModifyingSave={setModifyingSave}
+              modifyingSave={modifyingSave}
+            />
           )}
         </Tab.Screen>
         <Tab.Screen name="Auto" options={{headerShown: false}}>
-          {() => <Auto serverIp={serverIp} joints={joints} />}
+          {() => (
+            <Auto
+              serverIp={serverIp}
+              joints={joints}
+              setModifyingSave={setModifyingSave}
+            />
+          )}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
