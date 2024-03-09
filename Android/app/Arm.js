@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -19,6 +19,10 @@ const SliderComponent = ({
 }) => {
   const [sliderValue, setSliderValue] = useState(initialValue);
 
+  useEffect(() => {
+    setSliderValue(initialValue);
+  }, [initialValue]);
+
   const handleSliderChange = value => {
     setSliderValue(value);
     onValueChange(actionName, value);
@@ -34,7 +38,7 @@ const SliderComponent = ({
         minimumValue={minValue}
         maximumValue={maxValue}
         step={1}
-        value={sliderValue}
+        value={initialValue}
         onValueChange={handleSliderChange}
         minimumTrackTintColor="aqua"
         maximumTrackTintColor="aqua"
@@ -67,21 +71,56 @@ const Arm = ({
     gripper: 0,
     gripperTop: 0,
   });
-  const toServer = async (servo, value) => {
-    const url = `http://${serverIp}/setServo?servo=${servo}&value=${value}`;
 
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send value to server');
+  useEffect(() => {
+    if (modifyingSave !== 'nu') {
+      const index = modifyingSave - 1;
+      if (!isNaN(index) && index >= 0 && index < joints.base.length) {
+        setSliderValues({
+          base: joints.base[index],
+          shoulder: joints.shoulder[index],
+          upperArm: joints.upperArm[index],
+          hand: joints.hand[index],
+          gripper: joints.gripper[index],
+          gripperTop: joints.gripperTop[index],
+        });
+        toServer('base', joints.base[modifyingSave - 1]);
+        toServer('shoulder', joints.shoulder[modifyingSave - 1]);
+        toServer('upperArm', joints.upperArm[modifyingSave - 1]);
+        toServer('hand', joints.hand[modifyingSave - 1]);
+        toServer('gripper', joints.gripper[modifyingSave - 1]);
+        toServer('gripperTop', joints.gripperTop[modifyingSave - 1]);
       }
-    } catch (error) {
-      console.error('Error sending value to server:', error.message);
     }
-  };
+  }, [
+    modifyingSave,
+    joints.base,
+    joints.shoulder,
+    joints.upperArm,
+    joints.hand,
+    joints.gripper,
+    joints.gripperTop,
+    toServer,
+  ]);
+
+  const toServer = useCallback(
+    async (servo, value) => {
+      const url = `http://${serverIp}/setServo?servo=${servo}&value=${value}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to send value to server');
+        }
+      } catch (error) {
+        console.error('Error sending value to server:', error.message);
+      }
+    },
+    [serverIp],
+  );
 
   const handleSliderChange = (actionName, value) => {
     setSliderValues(prevValues => ({
@@ -102,7 +141,7 @@ const Arm = ({
       <SliderComponent
         label="Base"
         actionName="base"
-        initialValue={0}
+        initialValue={sliderValues.base}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -110,7 +149,7 @@ const Arm = ({
       <SliderComponent
         label="Shoulder"
         actionName="shoulder"
-        initialValue={0}
+        initialValue={sliderValues.shoulder}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -118,7 +157,7 @@ const Arm = ({
       <SliderComponent
         label="Upper Arm"
         actionName="upperArm"
-        initialValue={0}
+        initialValue={sliderValues.upperArm}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -126,7 +165,7 @@ const Arm = ({
       <SliderComponent
         label="Hand"
         actionName="hand"
-        initialValue={0}
+        initialValue={sliderValues.hand}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -134,7 +173,7 @@ const Arm = ({
       <SliderComponent
         label="Gripper"
         actionName="gripper"
-        initialValue={0}
+        initialValue={sliderValues.gripper}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -142,7 +181,7 @@ const Arm = ({
       <SliderComponent
         label="GripperTop"
         actionName="gripperTop"
-        initialValue={0}
+        initialValue={sliderValues.gripperTop}
         minValue={-90}
         maxValue={90}
         onValueChange={handleSliderChange}
@@ -152,15 +191,45 @@ const Arm = ({
           label="Save"
           actionName="save"
           onPress={() => {
-            toServer('save', 0);
-            setJoints(prevJoints => ({
-              base: [...prevJoints.base, sliderValues.base],
-              shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
-              upperArm: [...prevJoints.upperArm, sliderValues.upperArm],
-              hand: [...prevJoints.hand, sliderValues.hand],
-              gripper: [...prevJoints.gripper, sliderValues.gripper],
-              gripperTop: [...prevJoints.gripperTop, sliderValues.gripperTop],
-            }));
+            //toServer('save', 0);
+
+            setJoints(prevJoints => {
+              if (modifyingSave !== 'nu') {
+                const index = modifyingSave - 1;
+                return {
+                  base: prevJoints.base.map((value, i) =>
+                    i === index ? sliderValues.base : value,
+                  ),
+                  shoulder: prevJoints.shoulder.map((value, i) =>
+                    i === index ? sliderValues.shoulder : value,
+                  ),
+                  upperArm: prevJoints.upperArm.map((value, i) =>
+                    i === index ? sliderValues.upperArm : value,
+                  ),
+                  hand: prevJoints.hand.map((value, i) =>
+                    i === index ? sliderValues.hand : value,
+                  ),
+                  gripper: prevJoints.gripper.map((value, i) =>
+                    i === index ? sliderValues.gripper : value,
+                  ),
+                  gripperTop: prevJoints.gripperTop.map((value, i) =>
+                    i === index ? sliderValues.gripperTop : value,
+                  ),
+                };
+              } else {
+                return {
+                  base: [...prevJoints.base, sliderValues.base],
+                  shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
+                  upperArm: [...prevJoints.upperArm, sliderValues.upperArm],
+                  hand: [...prevJoints.hand, sliderValues.hand],
+                  gripper: [...prevJoints.gripper, sliderValues.gripper],
+                  gripperTop: [
+                    ...prevJoints.gripperTop,
+                    sliderValues.gripperTop,
+                  ],
+                };
+              }
+            });
           }}
         />
         <ButtonComponent
