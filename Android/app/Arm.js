@@ -5,6 +5,7 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  ToastAndroid,
 } from 'react-native';
 import WebView from 'react-native-webview';
 import Slider from '@react-native-community/slider';
@@ -71,6 +72,8 @@ const Arm = ({
     gripper: 0,
     gripperTop: 0,
   });
+
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (modifyingSave !== 'nu') {
@@ -195,6 +198,10 @@ const Arm = ({
 
             setJoints(prevJoints => {
               if (modifyingSave !== 'nu') {
+                ToastAndroid.show(
+                  'Saved to save: ' + modifyingSave + '. ',
+                  ToastAndroid.SHORT,
+                );
                 const index = modifyingSave - 1;
                 return {
                   base: prevJoints.base.map((value, i) =>
@@ -217,6 +224,7 @@ const Arm = ({
                   ),
                 };
               } else {
+                ToastAndroid.show('Saved to new save', ToastAndroid.SHORT);
                 return {
                   base: [...prevJoints.base, sliderValues.base],
                   shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
@@ -234,7 +242,24 @@ const Arm = ({
         />
         <ButtonComponent
           label="Stop Modifying"
-          onPress={() => setModifyingSave('nu')}
+          onPress={() => {
+            setModifyingSave('nu');
+            ToastAndroid.show(
+              'Stopped modifying save: ' + modifyingSave + '.',
+              ToastAndroid.SHORT,
+            );
+          }}
+        />
+        <ButtonComponent
+          label={isPlaying ? 'Stop' : 'Play'}
+          onPress={() => {
+            if (isPlaying) {
+              toServer('stop', 0);
+            } else {
+              toServer('play', 0);
+            }
+            setIsPlaying(!isPlaying);
+          }}
         />
       </View>
     </View>

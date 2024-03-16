@@ -38,6 +38,44 @@ void handleClients(String servo, int value) {
   ws.textAll(message);
 }
 
+void handleSaveSteps(AsyncWebServerRequest *request) {
+  int saveIndex = request->getParam("save")->value().toInt();
+
+  int valueBase = request->getParam("base")->value().toInt();
+  int valueShoulder = request->getParam("shoulder")->value().toInt();
+  int valueUpperArm = request->getParam("upperArm")->value().toInt();
+  int valueHand = request->getParam("hand")->value().toInt();
+  int valueGripper = request->getParam("gripper")->value().toInt();
+  int valueGripperTop = request->getParam("gripperTop")->value().toInt();
+
+  baseSave[saveIndex] = valueBase;
+  shoulderSave[saveIndex] = valueShoulder;
+  upperArmSave[saveIndex] = valueUpperArm;
+  handSave[saveIndex] = valueHand;
+  gripperSave[saveIndex] = valueGripper;
+  gripperTopSave[saveIndex] = valueGripperTop;
+
+  Serial.print("SaveIndex: ");
+  Serial.print(saveIndex);
+  Serial.print(" SaveValues: ");
+  Serial.print(baseSave[saveIndex]);
+  Serial.print(" ");
+  Serial.print(shoulderSave[saveIndex]);
+  Serial.print(" ");
+  Serial.print(upperArmSave[saveIndex]);
+  Serial.print(" ");
+  Serial.print(handSave[saveIndex]);
+  Serial.print(" ");
+  Serial.print(gripperSave[saveIndex]);
+  Serial.print(" ");
+  Serial.println(gripperTopSave[saveIndex]);
+
+  saveNumber++;
+
+
+  request->send(200, "text/plain", "OK");
+}
+
 // Obrađivanje primljenenih zahtjeva
 void handleSetServo(AsyncWebServerRequest *request) {
   // Izdvaja "action" iz zahtjeva | Extract the action from request
@@ -70,17 +108,9 @@ void handleSetServo(AsyncWebServerRequest *request) {
   }else if (action == "gripperTop") {
     gripperTop.write(value + 90);
     gripperTopLast = value;
-  }else if (action == "save") {
-    baseSave[saveNumber] = baseLast;
-    shoulderSave[saveNumber] = shoulderLast;
-    upperArmSave[saveNumber] = upperArmLast;
-    handSave[saveNumber] = handLast;
-    gripperSave[saveNumber] = gripperLast;
-    gripperTopSave[saveNumber] = gripperTopLast;
-    saveNumber++;
   }else if (action == "play") {
     play = true;
-  }else if (action == "restart") {
+  }else if (action == "stop") {
     play = false;
     saveNumber = 0;
   }
@@ -120,6 +150,7 @@ void setup() {
 
   server.on("/", HTTP_GET, handleRoot);
   server.on("/setServo", HTTP_GET, handleSetServo);
+  server.on("/saveSteps", HTTP_GET, handleSaveSteps);
   server.onNotFound(notFound);
   server.begin();
 

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ToastAndroid,
 } from 'react-native';
 
 const ButtonComponent = ({label, onPress}) => {
@@ -15,7 +16,31 @@ const ButtonComponent = ({label, onPress}) => {
   );
 };
 
-const Auto = ({joints, setModifyingSave}) => {
+const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
+  const saveToServer = async (
+    saveIndex,
+    valueBase,
+    valueShoulder,
+    valueUpperArm,
+    valueHand,
+    valueGripper,
+    valueGripperTop,
+  ) => {
+    const url = `http://${serverIp}/saveSteps?save=${saveIndex}&base=${valueBase}&shoulder=${valueShoulder}&upperArm=${valueUpperArm}&hand=${valueHand}&gripper=${valueGripper}&gripperTop=${valueGripperTop}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send value to server');
+      }
+    } catch (error) {
+      console.error('Error sending value to server:', error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -46,7 +71,40 @@ const Auto = ({joints, setModifyingSave}) => {
         </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <ButtonComponent label="Send to Server" onPress={() => {}} />
+        <ButtonComponent
+          label="Send to Server"
+          onPress={() => {
+            (async () => {
+              for (let i = 0; i < joints.base.length; i++) {
+                saveToServer(
+                  i,
+                  joints.base[i],
+                  joints.shoulder[i],
+                  joints.upperArm[i],
+                  joints.hand[i],
+                  joints.gripper[i],
+                  joints.gripperTop[i],
+                );
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
+              ToastAndroid.show('Saves sent to server!', ToastAndroid.SHORT);
+            })();
+          }}
+        />
+        <ButtonComponent
+          label="Delete saves"
+          onPress={() => {
+            setJoints({
+              base: [],
+              shoulder: [],
+              upperArm: [],
+              hand: [],
+              gripper: [],
+              gripperTop: [],
+            });
+            ToastAndroid.show('All saves deleted!', ToastAndroid.SHORT);
+          }}
+        />
       </View>
     </View>
   );
@@ -63,7 +121,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   buttonContainer: {
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
   row: {

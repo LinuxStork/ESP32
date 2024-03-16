@@ -53,6 +53,7 @@ export default function App() {
             <Auto
               serverIp={serverIp}
               joints={joints}
+              setJoints={setJoints}
               setModifyingSave={setModifyingSave}
             />
           )}

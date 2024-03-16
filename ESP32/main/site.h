@@ -17,12 +17,29 @@ const char* htmlCode = R"html(
         overflow-y: auto;
         height: 100%;
       }
+      button {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        opacity: 0;
+        z-index: 999;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
+  <button id="btn" onclick="refreshPage()"></button>
+
     <script type="module">
       import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
       import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
+
+      function refreshPage() {
+        location.reload();
+      }
+      document.getElementById('btn').addEventListener('click', refreshPage);
 
       // Postavljanje Three.js scene
       const scene = new THREE.Scene();
