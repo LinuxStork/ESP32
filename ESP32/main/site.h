@@ -27,10 +27,20 @@ const char* htmlCode = R"html(
         z-index: 999;
         cursor: pointer;
       }
+      p {
+	      position: absolute;
+	      top: 80%;
+	      width: 100%;
+	      text-align: center;
+	      z-index: 100;
+	      display:block;
+        color: white;
+}
     </style>
   </head>
   <body>
   <button id="btn" onclick="refreshPage()"></button>
+  <p id="step"></p>
 
     <script type="module">
       import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
@@ -58,12 +68,12 @@ const char* htmlCode = R"html(
       directionalLight.position.set(10, 5, 10);
       scene.add(directionalLight);
 
-      // Postavljanje renderer
+      // Postavljanje renderera
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // Stvoranje pod | Create the floor
+      // Stvoranje poda
       const floorGeometry = new THREE.PlaneGeometry(20, 20);
       const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
@@ -80,10 +90,10 @@ const char* htmlCode = R"html(
       let hand;
       let gripper;
 
-      // Kreiranje nove instance GLTFLoader-a | Create a new instance of GLTFLoader
+      // Kreiranje nove instance GLTFLoader-a
       const loader = new GLTFLoader();
 
-      // Funkcija za učitavanje modela i vraćanje promise | Function to load models and return a promise
+      // Funkcija za učitavanje modela i vraćanje promise
       function loadModels() {
         return new Promise((resolve, reject) => {
           let timeout = setTimeout(() => {
@@ -136,15 +146,13 @@ const char* htmlCode = R"html(
           });
         });
       }
-      // Pozivanje funkcije loadModels(), ako su 3D modeli uspječno učitani pozivanje funkcije rotateJoints() |
-      // Calling the function loadModels(), if the 3D models are successfully loaded calling the function rotateJoints()
+      // Pozivanje funkcije loadModels(), ako su 3D modeli uspječno učitani pozivanje funkcije rotateJoints()
       loadModels()
         .then(() => {
           rotateJoints();
         })
         .catch((error) => {
-          // Ako se 3D modeli ne uspiju učitati, stvorite vizualizaciju ruke robota s oblicima i zatim pozovite funkciju rotateJoints() |
-          // If 3D models fail to load, create robot arm visualization with shapes and then calling function rotateJoints()
+          // Ako se 3D modeli ne uspiju učitati, stvorite vizualizaciju ruke robota s oblicima i zatim pozovite funkciju rotateJoints()
           // Baza | Base
           base = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 2), new THREE.MeshStandardMaterial({ color: 0xff0000 }));
           scene.add(base);
@@ -198,14 +206,14 @@ const char* htmlCode = R"html(
         });
 
       function rotateJoints() {
-        // Inicijalizacija web socketa | Initializing websocket
+        // Inicijalizacija web socketa
         const esp32 = "ws://" + window.location.hostname + "/ws";
         const socket = new WebSocket(esp32);
 
-        // Slušanje poruka s web socketa | Listening for messages from websocket
+        // Slušanje poruka s web socketa
         socket.addEventListener("message", (event) => {
           console.log("Received message:", event.data);
-          const [joint, value] = event.data.split(" ");
+          const [joint, value, step] = event.data.split(" ");
           if (joint == "base") {
             options.base = parseFloat(value);
           } else if (joint == "shoulder") {
@@ -217,6 +225,11 @@ const char* htmlCode = R"html(
             options.hand = parseFloat(value);
           } else if (joint == "gripper") {
             options.gripper = parseFloat(value);
+          }
+          if(step == 0){
+            document.getElementById("step").textContent = "";
+          }else{
+            document.getElementById("step").textContent = "Step: " + step;
           }
         });
 
@@ -234,11 +247,11 @@ const char* htmlCode = R"html(
         const yAxis = new THREE.Vector3(0, 1, 0);
         const xAxis = new THREE.Vector3(1, 0, 0);
 
-        // Funkcija za rendering | Rendering function
+        // Funkcija za rendering
         const render = function () {
           requestAnimationFrame(render);
 
-          // Rotiranje zglobova na temelju vrijednosti web socketa | Rotate joints based on websocket value
+          // Rotiranje zglobova na temelju vrijednosti web socketa
           base.setRotationFromAxisAngle(yAxis, options.base * (Math.PI / 180));
           shoulder1.setRotationFromAxisAngle(zAxis, options.shoulder1 * (Math.PI / 180));
           shoulder2.setRotationFromAxisAngle(zAxis, options.shoulder2 * (Math.PI / 180));
@@ -252,6 +265,7 @@ const char* htmlCode = R"html(
       }
     </script>
   </body>
+
 </html>
 )html";
 #endif

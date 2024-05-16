@@ -5,23 +5,36 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
+  ToastAndroid,
 } from 'react-native';
 
-const Home = ({setServerIp, setModifyingSave}) => {
+// Glavna komponenta
+const Home = ({setServerIp, setModifyingSave, serverIp}) => {
   const [ipInput, setIpInput] = useState('');
-
+  // handker za unos teksta
   const handleInputChange = text => {
     setIpInput(text);
   };
-
+  // Funkcija za postavljanje IP adrese servera
   const handleSetIp = () => {
     setServerIp(ipInput);
     setModifyingSave('nu');
+    ToastAndroid.show('Done', ToastAndroid.SHORT);
+  };
+  // Funkcija za ponovno učitavanje IP adrese servera
+  const handleReloadIp = () => {
+    setServerIp('nu');
+    setTimeout(() => {
+      setServerIp(ipInput);
+      ToastAndroid.show('Done', ToastAndroid.SHORT);
+    }, 1000);
   };
 
+  // Prikaz komponente
   return (
     <View style={styles.container}>
       <Text style={styles.robotArm}>ESP32: Robotska ruka</Text>
+      {/* Unos IP adrese*/}
       <TextInput
         style={styles.input}
         placeholder="Enter IP Address"
@@ -29,13 +42,25 @@ const Home = ({setServerIp, setModifyingSave}) => {
         value={ipInput}
         placeholderTextColor="gray"
       />
-      <TouchableOpacity style={styles.button} onPress={handleSetIp}>
-        <Text style={styles.buttonText}>Set IP</Text>
+      {/* Gumb za postavljanje IP adrese*/}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          if (serverIp === '') {
+            handleSetIp();
+          } else if (serverIp !== '') {
+            handleReloadIp();
+          }
+        }}>
+        <Text style={styles.buttonText}>
+          {serverIp === '' ? 'Set IP' : 'Reload IP '}
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
 
+// Stiliziranje komponente
 const styles = StyleSheet.create({
   container: {
     flex: 1,

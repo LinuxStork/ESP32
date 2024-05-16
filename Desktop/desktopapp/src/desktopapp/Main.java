@@ -28,6 +28,7 @@ public class Main {
             JButton setIPButton = new JButton("Set IP");
             setIPButton.addActionListener(e -> {
                 ipAddress = ipTextField.getText();
+                SendAction.sendAction("restart", 0);
             });
             ipPanel.add(setIPButton);
 

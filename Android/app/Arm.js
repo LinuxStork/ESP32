@@ -10,6 +10,7 @@ import {
 import WebView from 'react-native-webview';
 import Slider from '@react-native-community/slider';
 
+// Komponenta za klizač
 const SliderComponent = ({
   label,
   actionName,
@@ -20,15 +21,18 @@ const SliderComponent = ({
 }) => {
   const [sliderValue, setSliderValue] = useState(initialValue);
 
+  // Postavljanje početne vrijednosti klizača
   useEffect(() => {
     setSliderValue(initialValue);
   }, [initialValue]);
 
+  // Funkcija za mjenjanje vrijednosti klizača
   const handleSliderChange = value => {
     setSliderValue(value);
     onValueChange(actionName, value);
   };
 
+  // Vraća komponentu s klizačem i tekstom.
   return (
     <View style={styles.sliderContainer}>
       <Text style={styles.sliderText}>
@@ -49,6 +53,7 @@ const SliderComponent = ({
   );
 };
 
+// Komponenta za gumb
 const ButtonComponent = ({label, onPress}) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -57,6 +62,7 @@ const ButtonComponent = ({label, onPress}) => {
   );
 };
 
+// Glavna komponenta
 const Arm = ({
   serverIp,
   joints,
@@ -72,9 +78,52 @@ const Arm = ({
     gripper: 0,
     gripperTop: 0,
   });
-
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Dohvaćanuje vrijednosti zglobova s poslužitelja u ovom slučaju ESP32
+  useEffect(() => {
+    const socket = new WebSocket(`ws://${serverIp}/ws`);
+
+    socket.addEventListener('message', event => {
+      const [joint, value, step] = event.data.split(' ');
+      setSliderValues(prevValues => ({
+        ...prevValues,
+        [joint]: Number(value),
+      }));
+    });
+
+    return () => socket.close();
+  }, [serverIp, isPlaying]);
+
+  // Dohvaćanuje vrijednosti zglobova s poslužitelja u ovom slučaju ESP32
+  useEffect(() => {
+    const fetchJointValues = async () => {
+      const url = `http://${serverIp}/jointsValues`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.text();
+        const [base, shoulder, upperArm, hand, gripper, gripperTop] = data
+          .split(' ')
+          .map(Number);
+
+        setSliderValues({
+          base,
+          shoulder,
+          upperArm,
+          hand,
+          gripper,
+          gripperTop,
+        });
+      } catch (error) {
+        console.error('Error fetching joint values:', error.message);
+      }
+    };
+
+    fetchJointValues();
+  }, [serverIp]);
+
+  // Ažuriranje vrijednosti klizača kada se mijenja spremljena vrijednost
   useEffect(() => {
     if (modifyingSave !== 'nu') {
       const index = modifyingSave - 1;
@@ -106,6 +155,7 @@ const Arm = ({
     toServer,
   ]);
 
+  // Funkcija za slanje na poslužitelj u ovom slučaju ESP32
   const toServer = useCallback(
     async (servo, value) => {
       const url = `http://${serverIp}/setServo?servo=${servo}&value=${value}`;
@@ -125,6 +175,7 @@ const Arm = ({
     [serverIp],
   );
 
+  // Funkcija za obradu promjene vrijednosti klizača
   const handleSliderChange = (actionName, value) => {
     setSliderValues(prevValues => ({
       ...prevValues,
@@ -135,12 +186,18 @@ const Arm = ({
 
   return (
     <View style={styles.container}>
-      <WebView source={{uri: `http://${serverIp}`}} style={styles.webview} />
+      <WebView // WebView za prikaz 3D vizualizacije robotske ruke
+        source={{uri: `http://${serverIp}`}}
+        style={styles.webview}
+      />
       <Text style={styles.sliderText}>
+        {/* Tekst koji prikazuje dali se save mijenja i ako da koji se mijenja.
+        ? : ternarni operator (skraćeni oblik if else naredbe) */}
         {modifyingSave === 'nu'
           ? 'Currently Not Modifying Save'
           : 'Currently Modifying ' + modifyingSave + '. Save'}
       </Text>
+      {/* Komponente za klizače */}
       <SliderComponent
         label="Base"
         actionName="base"
@@ -190,19 +247,24 @@ const Arm = ({
         onValueChange={handleSliderChange}
       />
       <View style={styles.buttonContainer}>
+        {/* Komponente za gumbe */}
         <ButtonComponent
+          //Gumb za spremanje
           label="Save"
           actionName="save"
           onPress={() => {
             //toServer('save', 0);
 
+            // Spremanje vrijednosti zglobova u joints prop prenesen iz App komponente
             setJoints(prevJoints => {
+              //Ako se mijenja postojeći save
               if (modifyingSave !== 'nu') {
                 ToastAndroid.show(
                   'Saved to save: ' + modifyingSave + '. ',
                   ToastAndroid.SHORT,
                 );
                 const index = modifyingSave - 1;
+                // Vraća se novi objekt s ažuriranim vrijednostima na indexu koji se mijenja
                 return {
                   base: prevJoints.base.map((value, i) =>
                     i === index ? sliderValues.base : value,
@@ -224,7 +286,9 @@ const Arm = ({
                   ),
                 };
               } else {
+                // Ako se stvara novi save
                 ToastAndroid.show('Saved to new save', ToastAndroid.SHORT);
+                // Vraća se novi objekt s dodanim vrijednostima na kraju polja
                 return {
                   base: [...prevJoints.base, sliderValues.base],
                   shoulder: [...prevJoints.shoulder, sliderValues.shoulder],
@@ -241,6 +305,7 @@ const Arm = ({
           }}
         />
         <ButtonComponent
+          //Gumb za zaustavljanje spremanja
           label="Stop Modifying"
           onPress={() => {
             setModifyingSave('nu');
@@ -251,6 +316,7 @@ const Arm = ({
           }}
         />
         <ButtonComponent
+          //Gumb za pokretanje ili zaustavljanje automatitiranih pokreta
           label={isPlaying ? 'Stop' : 'Play'}
           onPress={() => {
             if (isPlaying) {
@@ -268,6 +334,7 @@ const Arm = ({
 
 const {width} = Dimensions.get('window');
 
+// Stiliziranje komponenti
 const styles = StyleSheet.create({
   container: {
     flex: 1,

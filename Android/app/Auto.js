@@ -8,6 +8,7 @@ import {
   ToastAndroid,
 } from 'react-native';
 
+// Komponenta za gumb
 const ButtonComponent = ({label, onPress}) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -16,7 +17,9 @@ const ButtonComponent = ({label, onPress}) => {
   );
 };
 
+// Glavna komponenta
 const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
+  // Funkcija za slanje podataka na server
   const saveToServer = async (
     saveIndex,
     valueBase,
@@ -42,10 +45,13 @@ const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
   };
 
   return (
+    // Prikaz tablice sa spremljenim koracima
     <View style={styles.container}>
+      {/* ScrollView za mogućnost skrolanja ako ima puno spremljenih koraka*/}
       <ScrollView>
         <View style={styles.tableContainer}>
           <View style={styles.row}>
+            {/* header za prikaz imena zglobova */}
             <Text style={styles.header}>No.</Text>
             <Text style={styles.header}>Base</Text>
             <Text style={styles.header}>Shoulder</Text>
@@ -55,10 +61,17 @@ const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
             <Text style={styles.header}>Gripper Top</Text>
           </View>
           {joints.base.map((base, index) => (
-            <TouchableOpacity
-              key={index}
+            <TouchableOpacity // TouchableOpacity za mogućnost odabira spremljenog koraka
+              key={index} // Identifikacija jedinstvenog elementa u listi
               style={styles.row}
-              onPress={() => setModifyingSave(index + 1)}>
+              onPress={() => {
+                ToastAndroid.show(
+                  `Starting modifying save: ${index}`,
+                  ToastAndroid.SHORT,
+                );
+                setModifyingSave(index + 1);
+              }}>
+              {/* Prikaz spremljenih vrijednosti zglobova*/}
               <Text style={styles.header}>{index + 1}.</Text>
               <Text style={styles.cell}>{base}</Text>
               <Text style={styles.cell}>{joints.shoulder[index]}</Text>
@@ -71,9 +84,15 @@ const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
         </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
+        {/* Gumbi za slanje spremljenih koraka na server */}
         <ButtonComponent
           label="Send to Server"
+          // Funkcija za slanje svih spremljenih koraka na server prosljeđivanjem svakog koraka funkciji saveToServer
           onPress={() => {
+            ToastAndroid.show(
+              'Sending data to server, please wait!',
+              ToastAndroid.SHORT,
+            );
             (async () => {
               for (let i = 0; i < joints.base.length; i++) {
                 saveToServer(
@@ -85,12 +104,13 @@ const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
                   joints.gripper[i],
                   joints.gripperTop[i],
                 );
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 200));
               }
               ToastAndroid.show('Saves sent to server!', ToastAndroid.SHORT);
             })();
           }}
         />
+        {/* Gumb za brisanje svih spremljenih koraka */}
         <ButtonComponent
           label="Delete saves"
           onPress={() => {
@@ -110,6 +130,7 @@ const Auto = ({joints, setJoints, setModifyingSave, serverIp}) => {
   );
 };
 
+// Stiliziranje komponente
 const styles = StyleSheet.create({
   container: {
     flex: 1,
