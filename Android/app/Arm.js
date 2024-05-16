@@ -95,34 +95,6 @@ const Arm = ({
     return () => socket.close();
   }, [serverIp, isPlaying]);
 
-  // Dohvaćanuje vrijednosti zglobova s poslužitelja u ovom slučaju ESP32
-  useEffect(() => {
-    const fetchJointValues = async () => {
-      const url = `http://${serverIp}/jointsValues`;
-
-      try {
-        const response = await fetch(url);
-        const data = await response.text();
-        const [base, shoulder, upperArm, hand, gripper, gripperTop] = data
-          .split(' ')
-          .map(Number);
-
-        setSliderValues({
-          base,
-          shoulder,
-          upperArm,
-          hand,
-          gripper,
-          gripperTop,
-        });
-      } catch (error) {
-        console.error('Error fetching joint values:', error.message);
-      }
-    };
-
-    fetchJointValues();
-  }, [serverIp]);
-
   // Ažuriranje vrijednosti klizača kada se mijenja spremljena vrijednost
   useEffect(() => {
     if (modifyingSave !== 'nu') {
