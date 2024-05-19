@@ -8,23 +8,24 @@ public class Main {
 
 	public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+        	// Inicializacija JFramea
             JFrame frame = new JFrame("ESP32: Robotska ruka");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1280, 720);
             frame.setLayout(new GridLayout(1, 1));
 
-            // Create panel for sliders and IP input
+            // Kreiranje panela
             JPanel slidersPanel = new JPanel();
             slidersPanel.setLayout(new BorderLayout());
 
-            // IP input
+            // Unos IP adrese
             JPanel ipPanel = new JPanel();
             JLabel ipLabel = new JLabel("IP Address:");
             JTextField ipTextField = new JTextField(15);
             ipPanel.add(ipLabel);
             ipPanel.add(ipTextField);
             
-         // Add a button to set the IP address
+         // Gumb za postavljanje IP adrese
             JButton setIPButton = new JButton("Set IP");
             setIPButton.addActionListener(e -> {
                 ipAddress = ipTextField.getText();
@@ -34,7 +35,7 @@ public class Main {
 
             slidersPanel.add(ipPanel, BorderLayout.NORTH);
 
-            // Kreiranje Panela
+            // Kreiranje Panelaa za klizače
             JPanel slidersInnerPanel = new JPanel();
             slidersInnerPanel.setLayout(new GridLayout(7, 1));
 
@@ -42,17 +43,21 @@ public class Main {
             String[] sliderNames = {"base", "shoulder", "upperArm", "hand", "gripper", "gripperTop"};
             for (String sliderName : sliderNames) {
                 JPanel sliderWithLabel = new JPanel(new BorderLayout());
-
+                
+                // Oznaka za klizač
                 JLabel sliderLabel = new JLabel(sliderName, SwingConstants.CENTER);
                 sliderWithLabel.add(sliderLabel, BorderLayout.PAGE_START);
-
+                
+                // Kreiranje klizača
                 JSlider slider = new JSlider(JSlider.HORIZONTAL, -90, 90, 0);
                 slider.setMajorTickSpacing(30);
                 slider.setMinorTickSpacing(10);
                 slider.setPaintTicks(true);
                 slider.setPaintLabels(true);
-
+                
+                // Listener za pomak klizača
                 slider.addChangeListener(e -> {
+                	// Slanje pozicije klizača u SendAction
                 	SendAction.sendAction(sliderName, slider.getValue());
                 });
 
@@ -62,12 +67,14 @@ public class Main {
             }
             slidersPanel.add(slidersInnerPanel, BorderLayout.CENTER);
             frame.add(slidersPanel);
-            // Create panel for buttons (save, play, restart)
+            
+            // Kreiranje panela za (save, play, restart) gumbe
             JPanel buttonPanel = new JPanel();
             JButton saveButton = new JButton("Save");
             JButton playButton = new JButton("Play");
             JButton restartButton = new JButton("Restart");
 
+            // Listeneri za gumbe
             saveButton.addActionListener(e -> {
             	SendAction.sendAction("save", 0);
             });
@@ -88,18 +95,20 @@ public class Main {
 
             frame.add(slidersPanel);
 
-            // serial monitor panel
+            // Panel za seriski monitor
             JPanel serialMonitorPanel = new JPanel(new BorderLayout());
             JTextArea textArea = new JTextArea();
             textArea.setEditable(false);
             JScrollPane scrollPane = new JScrollPane(textArea);
             serialMonitorPanel.add(scrollPane, BorderLayout.CENTER);
 
+            // Izbornik za odabit seriskih portova
             JComboBox<String> portComboBox = new JComboBox<>();
             SerialMonitor.serialPorts(portComboBox);
 
             serialMonitorPanel.add(portComboBox, BorderLayout.NORTH);
 
+            // Gumb za pokretanje seriskog monitora
             JButton startButton = new JButton("Start");
             startButton.addActionListener(e -> {
                 String selectedPort = (String) portComboBox.getSelectedItem();
